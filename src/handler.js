@@ -33,31 +33,35 @@ exports.voiceResponse = function voiceResponse(requestBody) {
   const toNumberOrClientName = requestBody.To;
   const callerId = config.callerId;
   let twiml = new VoiceResponse();
+  let dial;
 
-  // If the request to the /voice endpoint is TO your Twilio Number, 
+  // If the request to the /voice endpoint is TO your Twilio Number,
   // then it is an incoming call towards your Twilio.Device.
   if (toNumberOrClientName == callerId) {
-    let dial = twiml.dial();
+    dial = twiml.dial();
 
-    // This will connect the caller with your Twilio.Device/client 
+    // This will connect the caller with your Twilio.Device/client
+    console.log(`connect the caller with your Twilio.Device/client, identity: ${identity}`);
     dial.client(identity);
-
   } else if (requestBody.To) {
     // This is an outgoing call
 
-    // set the callerId
-    let dial = twiml.dial({ callerId });
-
     // Check if the 'To' parameter is a Phone Number or Client Name
-    // in order to use the appropriate TwiML noun 
-    const attr = isAValidPhoneNumber(toNumberOrClientName)
-      ? "number"
-      : "client";
+    // in order to use the appropriate TwiML noun
+    const attr = isAValidPhoneNumber(toNumberOrClientName) ?
+    'number' :
+    'client';
+    if (attr === 'client') {
+      dial = twiml.dial();
+    } else {
+      dial = twiml.dial({callerId});
+    }
     dial[attr]({}, toNumberOrClientName);
   } else {
-    twiml.say("Thanks for calling!");
+    twiml.say('Thanks for calling!');
   }
 
+  console.log(twiml.toString());
   return twiml.toString();
 };
 
